@@ -3,6 +3,7 @@
 import os
 
 import matplotlib
+import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -120,3 +121,15 @@ def libras(x, decimales=0):
 
 def pct(x, decimales=1):
     return f"{100 * x:.{decimales}f}\\%"
+
+
+def cientifica(x, decimales=1):
+    """Notacion cientifica lista para LaTeX, en vez del 1.2e-07 de Python."""
+    if x == 0:
+        return "0"
+    exp = int(np.floor(np.log10(abs(x))))
+    mantisa = x / 10 ** exp
+    if round(abs(mantisa), decimales) >= 10:
+        mantisa /= 10
+        exp += 1
+    return rf"{mantisa:.{decimales}f}\times 10^{{{exp}}}"
