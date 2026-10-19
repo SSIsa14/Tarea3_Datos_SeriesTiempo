@@ -85,10 +85,3 @@ def limpiar(df, bitacora=None):
         df = df.loc[~quitar]
     return df.reset_index(drop=True)
 
-
-def serie_diaria(limpio):
-    """Venta neta diaria sobre el calendario completo (dias sin datos = NaN)."""
-    dia = limpio["InvoiceDate"].dt.normalize()
-    neta = limpio.groupby(dia)["Monto"].sum()
-    calendario = pd.date_range(neta.index.min(), neta.index.max(), freq="D")
-    return neta.reindex(calendario)
