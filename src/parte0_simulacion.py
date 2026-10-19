@@ -211,6 +211,7 @@ def main():
         macro("RunoRuido", f"{r0['r1'][0]:.4f}"),
         macro("RechazoTend", f"{rt['rech1'][0]:.3f}"),
         macro("RechazoSem", f"{rs['rech1'][0]:.3f}"),
+        macro("NoDetectaSem", f"{100 * (1 - rs['rech1'][0]):.0f}\\%"),
         macro("RunoTend", f"{rt['r1'][0]:.3f}"),
         macro("RsieteTend", f"{rt['r7'][0]:.3f}"),
         macro("RunoSem", f"{rs['r1'][0]:.3f}"),

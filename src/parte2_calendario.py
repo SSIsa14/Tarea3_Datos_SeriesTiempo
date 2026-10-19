@@ -11,7 +11,7 @@ import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 
-from comun import (TINTA, TERRACOTA, PETROLEO, MOSTAZA, CREMA, GRIS,
+from comun import (TINTA, TERRACOTA, PETROLEO, MOSTAZA, GRIS,
                    escribir_tex, macro, miles, libras, guardar, subtitulo)
 from datos import datos_limpios, serie_diaria, DIAS
 
@@ -59,8 +59,6 @@ def figura_calendario(s):
     fig, ax = plt.subplots(figsize=(11, 3.1))
     ax.set_facecolor("white")
     ax.grid(False)
-    for sp in ax.spines.values():
-        sp.set_visible(False)
     im = ax.pcolormesh(np.arange(nsem + 1), np.arange(8), np.ma.masked_invalid(m),
                        cmap=cmap, edgecolors="white", linewidth=1.2)
 

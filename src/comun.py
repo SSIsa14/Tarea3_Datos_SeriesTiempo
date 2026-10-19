@@ -17,8 +17,8 @@ Z95 = 1.959964  # cuantil 0.975 de la normal estandar
 
 
 # --- Estilo de las graficas ---
-# Paleta propia: tinta, terracota, verde petroleo, mostaza y ciruela sobre un
-# fondo crema muy suave.
+# Paleta propia: tinta, terracota, verde petroleo, mostaza y ciruela sobre
+# fondo blanco, con letra tipo Times New Roman y cada grafica enmarcada.
 
 TINTA = "#1F2A36"
 TERRACOTA = "#C8553D"
@@ -26,7 +26,6 @@ PETROLEO = "#2A7F7A"
 MOSTAZA = "#D99A1E"
 CIRUELA = "#6B4E71"
 GRIS = "#8C8C8C"
-CREMA = "#FBF8F3"
 PALETA = [PETROLEO, TERRACOTA, MOSTAZA, CIRUELA, TINTA]
 
 plt.rcParams.update({
@@ -34,14 +33,14 @@ plt.rcParams.update({
     "savefig.dpi": 160,
     "savefig.bbox": "tight",
     "figure.facecolor": "white",
-    "axes.facecolor": CREMA,
-    "axes.edgecolor": "#B8B2A7",
+    "axes.facecolor": "white",
+    "axes.edgecolor": "#4A4A4A",
     "axes.linewidth": 0.8,
-    "axes.spines.top": False,
-    "axes.spines.right": False,
+    "axes.spines.top": True,
+    "axes.spines.right": True,
     "axes.grid": True,
     "axes.grid.axis": "y",
-    "grid.color": "#D9D3C7",
+    "grid.color": "#D5D5D5",
     "grid.linestyle": ":",
     "grid.linewidth": 0.8,
     "axes.titlelocation": "left",
@@ -56,6 +55,11 @@ plt.rcParams.update({
     "xtick.labelsize": 8,
     "ytick.labelsize": 8,
     "font.size": 9,
+    # Times New Roman si esta instalada; si no, Liberation Serif o Nimbus
+    # Roman, que tienen las mismas medidas.
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "Liberation Serif", "Nimbus Roman", "DejaVu Serif"],
+    "mathtext.fontset": "stix",
     "legend.frameon": False,
     "legend.fontsize": 8,
 })

@@ -200,7 +200,7 @@ def main():
     # Tabla unica
     def celda_a(a):
         if a is None:
-            return "\\multicolumn{2}{c}{---}"
+            return "\\multicolumn{2}{c|}{---}"
         return (f"${miles(a[0][0])} \\pm {miles(a[0][1])}$ & "
                 f"${miles(a[1][0])} \\pm {miles(a[1][1])}$")
 
@@ -209,7 +209,7 @@ def main():
         f = res[m] if m in res else trampa
         if m == "M2+MA":
             filas.append("\\midrule")
-            c_txt = "\\multicolumn{2}{c}{sólo con trampa}"
+            c_txt = "\\multicolumn{2}{c|}{sólo con trampa}"
             nombre = "M2 + MA (5.4)"
         else:
             c_txt = f"${miles(f['c'][0])}$ & ${miles(f['c'][1])}$"

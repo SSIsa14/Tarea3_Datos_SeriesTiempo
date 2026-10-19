@@ -16,13 +16,16 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{graphicx}
 \usepackage{booktabs}
+% Sin espacio junto a las reglas, para que las lineas verticales sean continuas
+\setlength{\aboverulesep}{0pt}
+\setlength{\belowrulesep}{0pt}
+\renewcommand{\arraystretch}{1.2}
 \usepackage{array}
 \usepackage{multirow}
 % Columna de ancho fijo sin justificar, para que no queden huecos entre palabras
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \usepackage[margin=2.4cm]{geometry}
 \usepackage{xcolor}
-\usepackage[most]{tcolorbox}
 \usepackage{enumitem}
 \usepackage{caption}
 \usepackage{parskip}
@@ -41,6 +44,12 @@
 
 \graphicspath{{../figs/}{figs/}{./}}
 
+% Deja que tablas y figuras se acomoden junto al texto sin paginas medio vacias
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+
 \input{datos_p0}
 \input{datos_p1}
 \input{datos_p2}
@@ -49,8 +58,6 @@
 \input{datos_p5}
 \input{datos_p6}
 
-\definecolor{marco}{HTML}{2A7F7A}
-\definecolor{fondo}{HTML}{FBF8F3}
 
 \newcommand{\code}[1]{\texttt{#1}}
 % Libra esterlina que funciona igual dentro y fuera de modo matematico
@@ -61,12 +68,11 @@
 \DeclareMathOperator{\Cov}{Cov}
 \DeclareMathOperator{\E}{E}
 
-% Caja para las respuestas cortas a cada pregunta
-\newtcolorbox{respuesta}{enhanced, breakable, colback=fondo, colframe=marco,
-  boxrule=0pt, leftrule=2.5pt, arc=0pt, left=8pt, right=8pt, top=4pt, bottom=4pt}
+% Bloque de respuestas cortas: texto normal, separado por un espacio
+\newenvironment{respuesta}{\par\medskip}{\par\medskip}
 
 \title{\textbf{Tarea 3: Introducción a Series de Tiempo}}
-\author{Sofía Sandoval\\
+\author{Sofía Isabela Sandoval Vásquez\\
         Análisis y Ciencia de Datos\\
         Facultad de Ingeniería, Universidad del Istmo de Guatemala}
 \date{\today}
@@ -79,9 +85,10 @@
 La primera mitad del trabajo simula procesos cuya respuesta se conoce: un
 AR(1) con cuatro valores de $\phi$ y dos procesos sin memoria pero con media
 cambiante. Con 5\,000 réplicas de cada uno se ve que la prueba de retardo 1
-reprueba a una tendencia que no tiene memoria y deja pasar a un patrón
-semanal que sí tiene estructura, igual que le pasó a RANDU en la Tarea 2, y
-que Ljung--Box con $m=10$ sí lo detecta. La segunda mitad trabaja con las
+reprueba a una tendencia que no tiene memoria y no detecta, en la gran
+mayoría de las réplicas, un patrón semanal que sí tiene estructura, igual que
+le pasó a RANDU en la Tarea 2, mientras que Ljung--Box con $m=10$ sí lo
+detecta. La segunda mitad trabaja con las
 \FilasCrudas{} líneas de factura de Online Retail. Se documentan cinco reglas
 de limpieza en una bitácora, se reconstruye el calendario de la tienda
 (cierra los sábados y en los bank holidays, incluida la boda real de 2011) y
@@ -94,8 +101,8 @@ todas las estimaciones hechas dentro del entrenamiento se quedan cortas,
 porque la serie casi duplicó su nivel en la temporada navideña. El trabajo
 cierra con un análisis RFM: los campeones son el \FracCampeones{} de los
 clientes y generan el \VentaCampeones{} de la venta de octubre a diciembre,
-y los clientes nuevos aportan un \VentaNuevos{} que ningún modelo cliente por
-cliente puede ver.
+y los clientes nuevos aportan un \VentaNuevos{} que un modelo construido
+sólo con los clientes existentes no puede ver.
 \end{abstract}
 
 \newpage
@@ -250,11 +257,11 @@ La banda de la prueba es $1.96/\sqrt{300} = \BandaPcero$.
 \caption{AR(1) con 5\,000 réplicas por escenario. Entre paréntesis, el error
 estándar del promedio.}
 \label{tab:ar1}
-\begin{tabular}{@{}c rr rr r rr rr@{}}
+\begin{tabular}{|c|rr|rr|r|rr|rr|}
 \toprule
-$\phi$ & \multicolumn{2}{c}{$\bar r_1$} & \multicolumn{2}{c}{$\bar r_5$} &
-$\phi^5$ & \multicolumn{2}{c}{Rechazo $|r_1|>1.96/\sqrt n$} &
-\multicolumn{2}{c}{$\bar{\hat\phi}_{\text{OLS}}$} \\
+$\phi$ & \multicolumn{2}{c|}{$\bar r_1$} & \multicolumn{2}{c|}{$\bar r_5$} &
+$\phi^5$ & \multicolumn{2}{c|}{Rechazo $|r_1|>1.96/\sqrt n$} &
+\multicolumn{2}{c|}{$\bar{\hat\phi}_{\text{OLS}}$} \\
 \midrule
 \filas{tabla_p0_ar1}
 \bottomrule
@@ -287,11 +294,21 @@ $\PhiOLSnueve$ y para la caminata $\PhiOLSCaminata$. Con errores estándar de
 cuatro diezmilésimas, las tres diferencias son claramente reales. Es el
 sesgo clásico de muestra finita del AR(1), que aproximadamente vale
 $-(1+3\phi)/n$: con $n=300$ eso predice $-0.008$ y $-0.012$ para $\phi=0.5$ y
-$0.9$, muy cerca de lo que se observa. La razón es que el regresor
-$y_{t-1}$ no es independiente de los errores pasados, así que el supuesto de
-exogeneidad del OLS no se cumple exactamente. El estimador sigue siendo
-consistente (el sesgo baja como $1/n$), pero con 300 observaciones todavía
-se nota, y es más fuerte cerca de la raíz unitaria.
+$0.9$, muy cerca de lo que se observa.
+
+Conviene precisar de dónde sale. En el AR(1) sí se cumple la exogeneidad
+contemporánea: $\varepsilon_t$ es independiente de $y_{t-1}$, porque
+$y_{t-1}$ sólo depende de choques anteriores. Eso basta para que el OLS sea
+consistente. Lo que no se cumple es la exogeneidad \emph{estricta}, que es la
+que hace falta para que el OLS sea insesgado en muestras finitas: el error
+tiene que ser independiente de los regresores de \emph{todas} las filas, y
+aquí $\varepsilon_t$ forma parte de $y_t$, que es el regresor de la fila
+siguiente, y de $y_{t+1}, y_{t+2},\dots$ Como el estimador es un cociente que
+usa todos los regresores a la vez (y además la media muestral, que también
+contiene a $\varepsilon_t$), el numerador y el denominador quedan
+correlacionados y el valor esperado del cociente se aleja de $\phi$. El
+sesgo baja como $1/n$, pero con 300 observaciones todavía se nota, y es más
+fuerte cerca de la raíz unitaria.
 
 \subsection{Las dos razones para reprobar (0.4)}
 
@@ -304,10 +321,10 @@ figura~\ref{fig:media} muestra una realización y la ACF promedio de cada uno.
 \begin{table}[htbp]\centering\small
 \caption{Procesos sin memoria con media cambiante, 5\,000 réplicas.}
 \label{tab:media}
-\begin{tabular}{@{}l rr rr rr@{}}
+\begin{tabular}{|l|rr|rr|rr|}
 \toprule
-Proceso & \multicolumn{2}{c}{$\bar r_1$} & \multicolumn{2}{c}{$\bar r_7$} &
-\multicolumn{2}{c}{Rechazo con $r_1$} \\
+Proceso & \multicolumn{2}{c|}{$\bar r_1$} & \multicolumn{2}{c|}{$\bar r_7$} &
+\multicolumn{2}{c|}{Rechazo con $r_1$} \\
 \midrule
 \filas{tabla_p0_media}
 \bottomrule
@@ -330,10 +347,14 @@ que cada valor se parece a su vecino aunque los choques sean independientes.
 Su ACF es casi plana ($r_7=\RsieteTend$): baja muy despacio, que es la pista
 visual de la media no constante.
 
-\textbf{El patrón semanal pasa la prueba aunque tenga estructura.} Sólo
-rechaza en el $\RechazoSem$ de las réplicas: $r_1 = \RunoSem$ casi no se
-mueve, porque el día bajo está rodeado de días normales. Toda la estructura
-está en el rezago 7 ($r_7 = \RsieteSem$), que la prueba de retardo 1 no mira.
+\textbf{El patrón semanal casi nunca es detectado, aunque tenga
+estructura.} La prueba rechaza en el $\RechazoSem$ de las réplicas, así que
+no lo detecta en el \NoDetectaSem{} de ellas. Esa tasa es algo mayor que el
+5\,\% nominal porque $r_1$ tiene una media ligeramente negativa
+($\bar r_1 = \RunoSem$): el día bajo queda junto a días normales y eso
+produce una pequeña correlación negativa en el rezago 1. Pero está muy lejos
+de detectar el patrón de forma confiable, porque toda la estructura está en
+el rezago 7 ($r_7 = \RsieteSem$), que la prueba de retardo 1 no mira.
 \end{respuesta}
 
 La conexión con RANDU es directa. En la Tarea 2, RANDU pasó la prueba de
@@ -356,10 +377,10 @@ elegir $m$: $m=10$ (FPP2 sin estacionalidad) y $m=6\approx\log 300$ (Tsay).
 \begin{table}[htbp]\centering\small
 \caption{Tasa de rechazo al 5\,\% de la prueba de retardo 1 y de Ljung--Box.}
 \label{tab:lb}
-\begin{tabular}{@{}l rr rr rr@{}}
+\begin{tabular}{|l|rr|rr|rr|}
 \toprule
-Proceso & \multicolumn{2}{c}{Retardo 1} & \multicolumn{2}{c}{Ljung--Box $m=6$} &
-\multicolumn{2}{c}{Ljung--Box $m=10$} \\
+Proceso & \multicolumn{2}{c|}{Retardo 1} & \multicolumn{2}{c|}{Ljung--Box $m=6$} &
+\multicolumn{2}{c|}{Ljung--Box $m=10$} \\
 \midrule
 \filas{tabla_p0_ljungbox}
 \bottomrule
@@ -411,7 +432,7 @@ empiezan con cinco dígitos. La decisión para cada caso es la siguiente.
 renglón puede estar en más de un caso). El monto es la suma de
 \code{Quantity}~$\times$~\code{UnitPrice}.}
 \label{tab:casos}
-\begin{tabular}{@{}l r r@{}}
+\begin{tabular}{|l|r|r|}
 \toprule
 Caso & Filas & Monto \\
 \midrule
@@ -423,7 +444,7 @@ Caso & Filas & Monto \\
 \begin{table}[htbp]\centering\small
 \caption{Códigos de \code{StockCode} que no empiezan con cinco dígitos.}
 \label{tab:codigos}
-\begin{tabular}{@{}l L{5.6cm} r r l@{}}
+\begin{tabular}{|l|L{5.6cm}|r|r|l|}
 \toprule
 Código & Descripción & Filas & Monto & Decisión \\
 \midrule
@@ -485,7 +506,7 @@ en que aparecen, y cada conteo es sobre lo que dejó la regla anterior.
 \begin{table}[htbp]\centering\small
 \caption{Bitácora de limpieza, en el orden en que se aplican las reglas.}
 \label{tab:bitacora}
-\begin{tabular}{@{}c L{8.4cm} r r@{}}
+\begin{tabular}{|c|L{8.4cm}|r|r|}
 \toprule
 Orden & Regla & Filas eliminadas & Monto eliminado \\
 \midrule
@@ -516,8 +537,8 @@ pares, y en cada par una línea anula a la otra.
 antes de limpiar. ``Neto'' es la suma de todas las líneas limpias de ese
 cliente en ese día.}
 \label{tab:top6}
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{@{}l l L{3.2cm} r r r c c r@{}}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|l|l|L{3.2cm}|r|r|r|c|c|r|}
 \toprule
 Factura & Fecha & Descripción & Cantidad & Precio & Monto & Cliente & ¿Queda? & Neto del día \\
 \midrule
@@ -600,7 +621,7 @@ Gales de 2011 en la Tabla~\ref{tab:cerrados}.
 \begin{table}[htbp]\centering\small
 \caption{Días sin transacciones que no se explican sólo por ser sábado.}
 \label{tab:cerrados}
-\begin{tabular}{@{}l l l c@{}}
+\begin{tabular}{|l|l|l|c|}
 \toprule
 Fecha & Día & Clasificación & ¿Móvil? \\
 \midrule
@@ -709,7 +730,7 @@ cocientes (Tabla~\ref{tab:indices} y figura~\ref{fig:indices}).
 \begin{table}[htbp]\centering\small
 \caption{Índice estacional por día de la semana (entrenamiento).}
 \label{tab:indices}
-\begin{tabular}{@{}l r r@{}}
+\begin{tabular}{|l|r|r|}
 \toprule
 Día & Índice & Días promediados \\
 \midrule
@@ -801,7 +822,7 @@ punteadas marcan los rezagos 6, 12 y 18.}
 \caption{Ljung--Box sobre los residuos de cada modelo. La última columna son
 los grados de libertad usados para $Q(6)$ y $Q(12)$.}
 \label{tab:lb4}
-\begin{tabular}{@{}l r r r r c@{}}
+\begin{tabular}{|l|r|r|r|r|c|}
 \toprule
 Residuos & $Q(6)$ & valor-$p$ & $Q(12)$ & valor-$p$ & g.\,l. \\
 \midrule
@@ -878,7 +899,7 @@ iteraciones por defecto y con 500.
 \caption{Convergencia del optimizador. Los parámetros de S1 son
 (\NombresSuno) y los de S2 son (\NombresSdos).}
 \label{tab:conv}
-\begin{tabular}{@{}l l c r l@{}}
+\begin{tabular}{|l|l|c|r|l|}
 \toprule
 Modelo & \code{maxiter} & ¿Convergió? & Iteraciones & Parámetros \\
 \midrule
@@ -1009,10 +1030,10 @@ pronosticados.
 las 10 semillas.}
 \label{tab:errores}
 \setlength{\tabcolsep}{4.5pt}
-\begin{tabular}{@{}l rr rr rr@{}}
+\begin{tabular}{|l|r|r|r|r|r|r|}
 \toprule
-& \multicolumn{2}{c}{(a) CV aleatoria} & \multicolumn{2}{c}{(b) Origen móvil}
-& \multicolumn{2}{c}{(c) Prueba} \\
+& \multicolumn{2}{c|}{(a) CV aleatoria} & \multicolumn{2}{c|}{(b) Origen móvil}
+& \multicolumn{2}{c|}{(c) Prueba} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 Modelo & MAE & RMSE & MAE & RMSE & MAE & RMSE \\
 \midrule
@@ -1211,7 +1232,7 @@ cada dimensión como clasificador de $\text{compra}_i$, con los valores crudos
 \begin{minipage}{0.46\textwidth}\centering
 \caption{Fracción que compró, por puntaje.}
 \label{tab:tasas}
-\begin{tabular}{@{}c r r r@{}}
+\begin{tabular}{|c|r|r|r|}
 \toprule
 Puntaje & R & F & M \\
 \midrule
@@ -1222,7 +1243,7 @@ Puntaje & R & F & M \\
 \begin{minipage}{0.5\textwidth}\centering
 \caption{AUC como clasificador de $\text{compra}_i$.}
 \label{tab:auc}
-\begin{tabular}{@{}l r r r r@{}}
+\begin{tabular}{|l|r|r|r|r|}
 \toprule
 & $-$R & F & M & $R_s+F_s+M_s$ \\
 \midrule
@@ -1277,11 +1298,14 @@ venta neta de octubre a diciembre de los clientes con \code{CustomerID}.
 
 \begin{respuesta}
 \textbf{¿Puede RFM, o un modelo cliente por cliente, pronosticar esa venta?}
-No. RFM, y cualquier modelo que se construya cliente por cliente, sólo puede
-puntuar o pronosticar a los clientes que ya existen en la historia: un
-cliente nuevo no tiene R, ni F, ni M, ni fila en la tabla. Si se pronostica
-cada cliente y se suma (\emph{bottom-up}), ese \VentaNuevos{} no aparece en
-ningún lado, y el total queda sistemáticamente corto. En cambio, la serie
+RFM no, y un modelo cliente por cliente tampoco, si sólo pronostica a los
+clientes que ya existen en la historia: un cliente nuevo no tiene R, ni F, ni
+M, ni fila en la tabla. Si se pronostica cada cliente histórico y se suma
+(\emph{bottom-up}), ese \VentaNuevos{} no aparece en ningún lado, y el total
+queda sistemáticamente corto. Un \emph{bottom-up} ampliado sí podría
+cubrirlo, pero sólo agregando un modelo aparte para la llegada de clientes
+nuevos (cuántos llegan y cuánto compran), que ya no se construye cliente por
+cliente. En cambio, la serie
 agregada de la Parte 5 (\emph{top-down}) sí incluye a los clientes nuevos: no
 sabe quiénes son, pero su venta está dentro de cada día del total, así que
 la tendencia que siguieron B2 y S2 en otoño ya incluye a los clientes que
@@ -1305,8 +1329,9 @@ el agregado no puede saber.
 una media que cambia, y las dos cosas se ven distinto en la ACF: la memoria
 del AR(1) cae como $\phi^k$, mientras que una tendencia deja una ACF casi
 plana y una estacionalidad deja picos en el periodo. La prueba de retardo 1
-reprobó a una tendencia sin memoria y dejó pasar un patrón semanal, el mismo
-error de diseño que dejó pasar a RANDU en la Tarea 2. Ljung--Box sólo lo
+reprobó a una tendencia sin memoria y no detectó el patrón semanal en cerca
+del 89\,\% de las réplicas, el mismo punto ciego que dejó pasar a RANDU en la
+Tarea 2. Ljung--Box sólo lo
 arregla si $m$ cubre el periodo estacional.
 \item El estimador OLS del AR(1) tiene un sesgo hacia abajo de orden $1/n$
 que crece al acercarse a la raíz unitaria, y para la caminata aleatoria
@@ -1331,10 +1356,12 @@ predictor que mira el futuro, como la media móvil centrada, hace que el
 modelo se vea mejor y ninguna partición lo detecta.
 \item Detrás de la serie, una quinta parte de los clientes hace más de la
 mitad de la venta, y los clientes nuevos aportan cerca de una sexta parte
-que sólo el pronóstico agregado puede ver.
+que el pronóstico agregado ve de forma natural y que uno cliente por cliente
+sólo puede cubrir si se le agrega un modelo de captación de clientes.
 \end{itemize}
 
 % ===========================================================================
+\newpage
 \begin{thebibliography}{9}
 \bibitem{chen15} D. Chen. \emph{Online Retail} [conjunto de datos]. UCI
 Machine Learning Repository, 2015.
