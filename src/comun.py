@@ -95,14 +95,11 @@ def piruleta(ax, k, r, banda, color=TINTA):
 
 # --- Salida en LaTeX ---
 
-CABECERA = ("% Generado por los scripts de src/.\n"
-            "% No editar a mano: se sobrescribe en cada ejecucion.\n")
-
 
 def escribir_tex(nombre, lineas):
     ruta = os.path.join(DOC, nombre)
     with open(ruta, "w") as f:
-        f.write(CABECERA + "\n".join(lineas) + "\n")
+        f.write("\n".join(lineas) + "\n")
     return ruta
 
 

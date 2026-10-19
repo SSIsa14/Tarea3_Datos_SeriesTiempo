@@ -167,8 +167,8 @@ las lee de ahí, así que hay que correrlos antes de compilar.
 | `parte6_rfm.py` | `p6_tasas.png`, `p6_reparto.png` | `tabla_p6_*.tex` (2), `datos_p6.tex` |
 
 Los archivos que empiezan con `datos_` sólo contienen definiciones de valores
-y se leen desde el preámbulo del `.tex`. Ninguno de los archivos generados se
-edita a mano: se sobrescriben en cada ejecución.
+y se leen desde el preámbulo del `.tex`. Cada vez que se corre un script, sus
+archivos se vuelven a generar.
 
 ---
 
