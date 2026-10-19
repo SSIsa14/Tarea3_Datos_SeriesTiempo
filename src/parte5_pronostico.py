@@ -22,6 +22,7 @@ from parte3_estacionalidad import media_movil
 from parte4_sarima import ajustar, indicadoras
 
 SEMILLAS_CV = [141903 + i for i in range(10)]
+LETRAS = {"B1": "Buno", "B2": "Bdos", "M1": "Muno", "M2": "Mdos", "S1": "Suno", "S2": "Sdos"}
 MODELOS = ["B1", "B2", "M1", "M2", "S1", "S2"]
 ORIGENES_B = pd.date_range("2011-05-01", "2011-09-30", freq="W-SUN")
 ORIGENES_C = pd.date_range(PRIMER_ORIGEN_PRUEBA, FIN_PRUEBA, freq="W-SUN")
@@ -208,8 +209,8 @@ def main():
         f = res[m] if m in res else trampa
         if m == "M2+MA":
             filas.append("\\midrule")
-            c_txt = "\\multicolumn{2}{c}{no se puede sin hacer trampa}"
-            nombre = "M2 + media móvil (5.4)"
+            c_txt = "\\multicolumn{2}{c}{sólo con trampa}"
+            nombre = "M2 + MA (5.4)"
         else:
             c_txt = f"${miles(f['c'][0])}$ & ${miles(f['c'][1])}$"
             nombre = m
@@ -235,9 +236,9 @@ def main():
         macro("MediaPrueba", libras(prueba.mean())),
         macro("MediaMayoSep", libras(ent["2011-05-01":].mean())),
         macro("LagMayo", libras(lags.loc["2011-05-09", "lag7"], 2)),
-    ] + [macro(f"MAEc{m}", miles(res[m]["c"][0])) for m in MODELOS]
-      + [macro(f"MAEb{m}", miles(res[m]["b"][0])) for m in MODELOS]
-      + [macro(f"MAEa{m}", miles(res[m]["a"][0][0])) for m in ("B1", "M1", "M2")]
+    ] + [macro(f"MAEc{LETRAS[m]}", miles(res[m]["c"][0])) for m in MODELOS]
+      + [macro(f"MAEb{LETRAS[m]}", miles(res[m]["b"][0])) for m in MODELOS]
+      + [macro(f"MAEa{LETRAS[m]}", miles(res[m]["a"][0][0])) for m in ("B1", "M1", "M2")]
       + [macro("MAEaTrampa", miles(trampa["a"][0][0])),
          macro("MAEbTrampa", miles(trampa["b"][0]))])
 

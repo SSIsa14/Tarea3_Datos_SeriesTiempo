@@ -68,7 +68,9 @@ def main():
         else:
             decision = "producto, se queda"
         etiqueta = {"DCGS": "DCGS\\ldots", "gift_0001": "gift\\_0001\\_\\ldots"}.get(fam, tex_texto(fam))
-        lineas.append(f"\\code{{{etiqueta}}} & {tex_texto(r['desc'])} & ${miles(r['n'])}$ & "
+        desc = {"DCGS": "Productos varios (bolsas, collares, lámparas)",
+                "gift_0001": "Gift vouchers de \\libra{}10 a \\libra{}50"}.get(fam, tex_texto(r["desc"]))
+        lineas.append(f"\\code{{{etiqueta}}} & {desc} & ${miles(r['n'])}$ & "
                       f"${libras(r['monto'])}$ & {decision} \\\\")
     escribir_tex("tabla_p1_codigos.tex", lineas)
 

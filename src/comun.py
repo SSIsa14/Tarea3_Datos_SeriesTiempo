@@ -116,7 +116,7 @@ def miles(x, decimales=0):
 
 def libras(x, decimales=0):
     signo = "-" if x < 0 else ""
-    return f"{signo}\\pounds{miles(abs(x), decimales)}"
+    return f"{signo}\\libra{{}}{miles(abs(x), decimales)}"
 
 
 def pct(x, decimales=1):

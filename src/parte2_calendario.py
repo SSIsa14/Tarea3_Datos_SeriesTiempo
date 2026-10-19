@@ -138,6 +138,8 @@ def main():
         macro("DiasCerrados", n_cal - n_abiertos),
         macro("SabadosCerrados", sabados),
         macro("SabadosAbiertos", sabados_abiertos),
+        macro("TotalSabados", int((s.index.dayofweek == 5).sum())),
+        macro("OtrosCerrados", int((cerrados.dayofweek != 5).sum())),
         macro("CerradosNoSabado", n_cal - n_abiertos - sabados),
         macro("SinExplicar", sin_explicar),
         macro("UltimaHora", f"{hora_fin:%H:%M}"),
