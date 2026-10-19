@@ -6,176 +6,197 @@ Facultad de Ingeniería, Universidad del Istmo de Guatemala
 Simulación de procesos AR(1) y de procesos con media cambiante (Parte 0), y
 análisis de la venta neta diaria de Online Retail: limpieza, calendario,
 descomposición, modelos AR(1) y SARIMA, pronóstico con origen móvil y
-análisis RFM (Partes 1 a 6). La autocorrelación y Ljung–Box están hechos a
-mano con numpy.
+análisis RFM (Partes 1 a 6).
 
-Todo el documento se reproduce corriendo siete scripts y compilando el `.tex`.
-Abajo está el procedimiento completo.
-
----
-
-## 1. Requisitos
-
-- **Python 3.12**, que es la versión con la que se probó todo. Verificar con:
-
-  ```bash
-  python3 --version
-  ```
-
-- **Las librerías de Python.** Conviene instalarlas en un entorno virtual:
-
-  ```bash
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install numpy pandas matplotlib scipy statsmodels scikit-learn openpyxl
-  ```
-
-  Se probó con numpy 2.5, pandas 3.0, matplotlib 3.11, statsmodels 0.15 y
-  scikit-learn 1.9. `openpyxl` sólo hace falta para leer el `.xlsx`.
-
-- **Los datos.** El archivo `Online Retail.xlsx` del repositorio de UCI no
-  viene en el repositorio. Hay que descargarlo y dejarlo en `data/`:
-
-  ```bash
-  mkdir -p data
-  curl -L -o online_retail.zip "https://archive.ics.uci.edu/static/public/352/online+retail.zip"
-  unzip online_retail.zip -d data
-  ```
-
-  Debe quedar como `data/Online Retail.xlsx` (con el espacio en el nombre).
-
-- **Una distribución de LaTeX**, para compilar el PDF. Sirve cualquiera de
-  estas opciones:
-
-  ```bash
-  sudo apt install texlive-latex-extra texlive-lang-spanish   # opción 1
-  ```
-
-  ```bash
-  curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh   # opción 2: tectonic
-  ```
-
-  La opción 3 es subir la carpeta `doc/` junto con `figs/` a Overleaf y
-  compilar ahí. El PDF de este repositorio se compiló con tectonic.
+El documento final es [`doc/tarea3.pdf`](doc/tarea3.pdf) y el enunciado es
+[`BI_Tarea4.pdf`](BI_Tarea4.pdf). Todo lo que aparece en el documento (cifras,
+tablas y figuras) se genera con los scripts de `src/` a partir del archivo
+`.xlsx` original.
 
 ---
 
-## 2. Reproducir todo, paso a paso
+## Resumen rápido
 
-Los comandos se corren **desde la raíz del proyecto** (la carpeta donde está
-este archivo), con el entorno virtual activado.
-
-### Paso 1. Parte 0, procesos simulados
+Para quien ya tiene Python y quiere correr todo de una vez (Linux o macOS):
 
 ```bash
-python3 src/parte0_simulacion.py
+git clone <url de este repositorio>
+cd <carpeta del repositorio>
+python3 -m venv .venv
+source .venv/bin/activate
+pip install numpy pandas matplotlib scipy statsmodels scikit-learn openpyxl
+mkdir -p data
+curl -L -o data/online_retail.zip "https://archive.ics.uci.edu/static/public/352/online+retail.zip"
+unzip data/online_retail.zip -d data
+for s in parte0_simulacion parte1_limpieza parte2_calendario parte3_estacionalidad parte4_sarima parte5_pronostico parte6_rfm; do python3 src/$s.py; done
+cd doc && tectonic -X compile tarea3.tex
 ```
 
-Tarda unos 3 segundos. Simula 5000 réplicas de cada escenario. En pantalla
-debe aparecer, entre otras cosas:
+Abajo está cada paso explicado.
 
-- `phi=0.0  r1=-0.0022 ... rechazo=0.0462`
-- `Ljung-Box propio Q=33.654177 p=0.000211 | statsmodels Q=33.654177 p=0.000211`
+---
 
-### Paso 2. Parte 1, limpieza
+## Paso a paso
+
+### Paso 1. Descargar el repositorio
 
 ```bash
-python3 src/parte1_limpieza.py
+git clone <url de este repositorio>
+cd <carpeta del repositorio>
 ```
 
-Tarda unos 25 segundos la primera vez, porque lee el `.xlsx`. Deja una copia
-en `data/online_retail.pkl` para que los demás scripts no lo vuelvan a leer;
-si el `.xlsx` cambia, la copia se regenera sola. Debe terminar con:
+**Todos los comandos que siguen se corren desde esta carpeta** (la raíz del
+proyecto, donde está este README). Si un script se corre desde otra carpeta,
+no encuentra sus módulos.
 
-```
-filas limpias=531877  venta neta=9,697,276.11
-```
-
-### Paso 3. Parte 2, el calendario
+### Paso 2. Revisar que haya Python
 
 ```bash
-python3 src/parte2_calendario.py
+python3 --version
 ```
 
-Tarda unos 2 segundos. Debe reportar `dias calendario=374  con transacciones=305`
-y listar los 18 días cerrados que no son sólo sábado.
+Debe decir `Python 3.10` o mayor. Todo se probó con Python 3.12. En Windows
+el comando suele ser `python` en lugar de `python3`.
 
-### Paso 4. Parte 3, tendencia, estacionalidad y ACF
+### Paso 3. Crear el entorno virtual e instalar las librerías
+
+El entorno virtual es una carpeta (`.venv`) donde se instalan las librerías
+sólo para este proyecto, sin tocar el resto de la computadora.
 
 ```bash
-python3 src/parte3_estacionalidad.py
+python3 -m venv .venv
 ```
 
-Tarda unos 2 segundos. El pico de la ACF debe salir en el rezago 6.
-
-### Paso 5. Parte 4, del AR(1) al SARIMA
+Después hay que **activarlo**:
 
 ```bash
-python3 src/parte4_sarima.py
+source .venv/bin/activate        # Linux o macOS
+.venv\Scripts\activate           # Windows
 ```
 
-Tarda unos 4 segundos. S1 debe salir `convergio=no` con 50 iteraciones y
-`convergio=sí` con 500: es el resultado que se analiza en el documento.
+Cuando está activo, la terminal muestra `(.venv)` al inicio de la línea. Hay
+que activarlo cada vez que se abre una terminal nueva para trabajar en el
+proyecto.
 
-### Paso 6. Parte 5, pronóstico y fuga
+Con el entorno activo, se instalan las librerías:
 
 ```bash
-python3 src/parte5_pronostico.py
+pip install numpy pandas matplotlib scipy statsmodels scikit-learn openpyxl
 ```
 
-Tarda unos 20 segundos, que es el más lento porque reajusta los SARIMA en
-cada uno de los 32 orígenes. S2 debe salir con el menor MAE en prueba
-(`MAE 12,545`) y los SARIMA deben converger en `32 de 32` orígenes.
+Se probó con numpy 2.5, pandas 3.0, matplotlib 3.11, statsmodels 0.15 y
+scikit-learn 1.9. `openpyxl` es la que permite leer el archivo de Excel.
 
-### Paso 7. Parte 6, RFM
+### Paso 4. Descargar los datos
+
+Los datos no vienen en el repositorio porque son públicos. Son el archivo
+`Online Retail.xlsx` del repositorio de UCI, y tienen que quedar dentro de
+una carpeta `data/`.
+
+**Opción A, con la terminal (Linux o macOS):**
 
 ```bash
-python3 src/parte6_rfm.py
+mkdir -p data
+curl -L -o data/online_retail.zip "https://archive.ics.uci.edu/static/public/352/online+retail.zip"
+unzip data/online_retail.zip -d data
 ```
 
-Tarda unos 3 segundos. Debe reportar `clientes=3615` y los AUC de R, F, M y
-de la suma de puntajes.
+**Opción B, a mano (cualquier sistema):**
 
-### Paso 8. Compilar el documento
+1. Entrar a <https://archive.ics.uci.edu/dataset/352/online+retail> y darle a
+   *Download*.
+2. Descomprimir el `.zip`.
+3. Crear la carpeta `data` en la raíz del proyecto y mover ahí el archivo.
+
+En cualquiera de las dos opciones tiene que quedar así, con el nombre
+original (incluido el espacio):
+
+```
+data/Online Retail.xlsx
+```
+
+### Paso 5. Correr los scripts
+
+Hay un script por cada parte de la tarea. Se corren **en este orden**, con el
+entorno virtual activo:
+
+| # | Comando | Qué hace | Tiempo aprox. |
+|---|---|---|---|
+| 1 | `python3 src/parte0_simulacion.py` | Parte 0: simula los AR(1) y los procesos con media cambiante | 3 s |
+| 2 | `python3 src/parte1_limpieza.py` | Parte 1: limpieza de los datos y bitácora | 25 s |
+| 3 | `python3 src/parte2_calendario.py` | Parte 2: serie diaria y días cerrados | 2 s |
+| 4 | `python3 src/parte3_estacionalidad.py` | Parte 3: tendencia, índices estacionales y ACF | 2 s |
+| 5 | `python3 src/parte4_sarima.py` | Parte 4: indicadoras, AR(1) y los SARIMA S1 y S2 | 4 s |
+| 6 | `python3 src/parte5_pronostico.py` | Parte 5: los seis modelos y las tres validaciones | 20 s |
+| 7 | `python3 src/parte6_rfm.py` | Parte 6: análisis RFM | 3 s |
+
+El script 2 es el único que lee el Excel, y por eso es el más lento la
+primera vez. Guarda una copia en `data/online_retail.pkl` para que los
+demás scripts arranquen rápido.
+
+Para correr los siete seguidos con un solo comando (Linux o macOS):
+
+```bash
+for s in parte0_simulacion parte1_limpieza parte2_calendario parte3_estacionalidad parte4_sarima parte5_pronostico parte6_rfm; do python3 src/$s.py; done
+```
+
+Cada script imprime en la terminal sus resultados principales, para poder
+compararlos con el documento. Algunos valores que deben aparecer:
+
+| Script | Debe aparecer |
+|---|---|
+| `parte0_simulacion.py` | `phi=0.0  r1=-0.0022 ... rechazo=0.0462` |
+| `parte1_limpieza.py` | `filas limpias=531877  venta neta=9,697,276.11` |
+| `parte2_calendario.py` | `dias calendario=374  con transacciones=305` |
+| `parte3_estacionalidad.py` | `... pico=6 ...` |
+| `parte4_sarima.py` | S1 con `convergio=no` en 50 iteraciones y `convergio=sí` en 500 |
+| `parte5_pronostico.py` | `S2: ... (c) MAE 12,545 ...` y `convergio en 32 de 32 origenes` |
+| `parte6_rfm.py` | `clientes=3615` |
+
+Al terminar, las figuras quedan en `figs/` y las tablas en `doc/`.
+
+### Paso 6. Compilar el documento
+
+El documento en LaTeX lee las figuras y tablas que generaron los scripts, así
+que este paso va después del paso 5.
+
+**Opción A, con tectonic** (así se compiló el PDF del repositorio):
 
 ```bash
 cd doc
 tectonic -X compile tarea3.tex
 ```
 
-Con una instalación normal de LaTeX, el equivalente es correr `pdflatex
-tarea3.tex` **dos veces** (la primera pasada arma el índice y las
-referencias, y la segunda las coloca bien).
+Si no está instalado:
+
+```bash
+curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+```
+
+Ese comando deja el programa `tectonic` en la carpeta donde se corre.
+
+**Opción B, con una instalación normal de LaTeX** (TeX Live o MiKTeX):
+
+```bash
+cd doc
+pdflatex tarea3.tex
+pdflatex tarea3.tex
+```
+
+Se corre **dos veces**: la primera arma el índice y las referencias, y la
+segunda las coloca bien.
+
+**Opción C, en Overleaf:** subir la carpeta `doc/` y la carpeta `figs/` y
+compilar ahí.
 
 El resultado es `doc/tarea3.pdf`, de 29 páginas.
 
 ---
 
-## 3. Qué produce cada script
+## Semillas
 
-Los scripts escriben sus figuras en `figs/` y sus tablas en `doc/`. El `.tex`
-las lee de ahí, así que hay que correrlos antes de compilar.
-
-| Script | Figuras | Tablas |
-|---|---|---|
-| `parte0_simulacion.py` | `p0_realizaciones.png`, `p0_media_cambiante.png` | `tabla_p0_*.tex` (3), `datos_p0.tex` |
-| `parte1_limpieza.py` | — | `tabla_p1_*.tex` (4, incluida la bitácora), `datos_p1.tex` |
-| `parte2_calendario.py` | `p2_calendario.png` | `tabla_p2_cerrados.tex`, `datos_p2.tex` |
-| `parte3_estacionalidad.py` | `p3_tendencia.png`, `p3_indices.png`, `p3_acf.png` | `tabla_p3_indices.tex`, `datos_p3.tex` |
-| `parte4_sarima.py` | `p4_acf_residuos.png`, `p4_horizonte.png` | `tabla_p4_*.tex` (2), `datos_p4.tex` |
-| `parte5_pronostico.py` | `p5_prueba.png` | `tabla_p5_errores.tex`, `datos_p5.tex` |
-| `parte6_rfm.py` | `p6_tasas.png`, `p6_reparto.png` | `tabla_p6_*.tex` (2), `datos_p6.tex` |
-
-Los archivos que empiezan con `datos_` sólo contienen definiciones de valores
-y se leen desde el preámbulo del `.tex`. Cada vez que se corre un script, sus
-archivos se vuelven a generar.
-
----
-
-## 4. Semillas
-
-Están fijas dentro de cada script, así que dos corridas distintas dan
-exactamente los mismos resultados.
+Están fijas dentro de cada script, así que dos corridas dan exactamente los
+mismos resultados.
 
 | Semilla | Dónde se usa |
 |---|---|
@@ -190,10 +211,28 @@ exactamente los mismos resultados.
 
 ---
 
-## 5. La función `limpiar`
+## Qué produce cada script
+
+| Script | Figuras (`figs/`) | Tablas (`doc/`) |
+|---|---|---|
+| `parte0_simulacion.py` | `p0_realizaciones.png`, `p0_media_cambiante.png` | `tabla_p0_*.tex` (3), `datos_p0.tex` |
+| `parte1_limpieza.py` | — | `tabla_p1_*.tex` (4, incluida la bitácora), `datos_p1.tex` |
+| `parte2_calendario.py` | `p2_calendario.png` | `tabla_p2_cerrados.tex`, `datos_p2.tex` |
+| `parte3_estacionalidad.py` | `p3_tendencia.png`, `p3_indices.png`, `p3_acf.png` | `tabla_p3_indices.tex`, `datos_p3.tex` |
+| `parte4_sarima.py` | `p4_acf_residuos.png`, `p4_horizonte.png` | `tabla_p4_*.tex` (2), `datos_p4.tex` |
+| `parte5_pronostico.py` | `p5_prueba.png` | `tabla_p5_errores.tex`, `datos_p5.tex` |
+| `parte6_rfm.py` | `p6_tasas.png`, `p6_reparto.png` | `tabla_p6_*.tex` (2), `datos_p6.tex` |
+
+Los archivos `tabla_*.tex` tienen las filas de cada tabla y los `datos_*.tex`
+tienen los valores que se citan en el texto. Cada vez que se corre un script,
+sus archivos se vuelven a generar.
+
+---
+
+## La función `limpiar`
 
 Está en su propio archivo, `src/limpieza.py`, para poder reusarla en el
-proyecto:
+proyecto. Desde un script dentro de `src/`:
 
 ```python
 from limpieza import cargar, limpiar
@@ -207,28 +246,31 @@ filas y el monto que elimina cada una.
 
 ---
 
-## 6. Si algo falla
+## Si algo falla
 
 **`FileNotFoundError: ... Online Retail.xlsx`**
-Falta descargar los datos (sección 1). El archivo va en `data/` con su nombre
-original.
+Faltan los datos o no están en el lugar correcto. Revisar el paso 4: el
+archivo tiene que estar en `data/Online Retail.xlsx`.
 
 **`ModuleNotFoundError: No module named 'pandas'`** (u otra librería)
-Falta instalar las dependencias o activar el entorno virtual.
+El entorno virtual no está activo o faltó instalar las librerías. Revisar el
+paso 3.
 
-**`ModuleNotFoundError: No module named 'comun'`**
-Se está corriendo el script desde otra carpeta. Los comandos van desde la
-raíz del proyecto, en la forma `python3 src/nombre.py`.
+**`ModuleNotFoundError: No module named 'comun'`** (u otro módulo de `src/`)
+El script se está corriendo desde otra carpeta. Hay que volver a la raíz del
+proyecto y correrlo como `python3 src/nombre.py`.
 
 **El PDF compila pero faltan tablas o aparece `Undefined control sequence`**
-Faltó correr algún script antes de compilar. Hay que hacer los pasos 1 al 7 y
-volver a compilar.
+Faltó correr algún script antes de compilar. Hay que hacer el paso 5 completo
+y volver a compilar.
 
 ---
 
-## 7. Estructura del proyecto
+## Estructura del proyecto
 
 ```
+BI_Tarea4.pdf               enunciado de la tarea
+README.md
 src/
   comun.py                  rutas, salida a LaTeX y estilo de las gráficas
   series.py                 ACF, Ljung-Box y OLS del AR(1), hechos a mano
@@ -244,10 +286,7 @@ src/
 doc/
   tarea3.tex                el documento
   tarea3.pdf                el PDF compilado
-  (tablas generadas por los scripts)
+  tabla_*.tex, datos_*.tex  tablas y valores generados por los scripts
 figs/                       figuras generadas por los scripts
-data/                       Online Retail.xlsx (no se sube al repositorio)
-README.md
+data/                       Online Retail.xlsx (se descarga en el paso 4)
 ```
-
-Correr los siete scripts toma alrededor de un minuto en total.
