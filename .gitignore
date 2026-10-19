@@ -14,6 +14,3 @@ data/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-
-# Enunciado
-BI_Tarea4.pdf
