@@ -20,8 +20,8 @@ tablas y figuras) se genera con los scripts de `src/` a partir del archivo
 Para quien ya tiene Python y quiere correr todo de una vez (Linux o macOS):
 
 ```bash
-git clone <url de este repositorio>
-cd <carpeta del repositorio>
+git clone https://github.com/SSIsa14/Tarea3_Datos_SeriesTiempo.git
+cd Tarea3_Datos_SeriesTiempo
 python3 -m venv .venv
 source .venv/bin/activate
 pip install numpy pandas matplotlib scipy statsmodels scikit-learn openpyxl
@@ -41,8 +41,8 @@ Abajo está cada paso explicado.
 ### Paso 1. Descargar el repositorio
 
 ```bash
-git clone <url de este repositorio>
-cd <carpeta del repositorio>
+git clone https://github.com/SSIsa14/Tarea3_Datos_SeriesTiempo.git
+cd Tarea3_Datos_SeriesTiempo
 ```
 
 **Todos los comandos que siguen se corren desde esta carpeta** (la raíz del
